@@ -66,21 +66,24 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
 }
 
 // To transform from world coordinate to vehicle coordinate
-void transform(const double x, const double y, const double psi, 
-               const vector<double> &src_x, 
-               const vector<double> &src_y, 
-               vector<double> *dest_x, 
-               vector<double> *dest_y) {
-  for (int i = 0; i < src_x.size(); i++) {
+vector<Eigen::VectorXd> transformToLocalFrame(const double x, const double y, const double psi, 
+                                  const vector<double> &src_x, 
+                                  const vector<double> &src_y) {
+  assert(src_x.size() == src_y.size());
+
+  int size = src_x.size();
+
+  Eigen::VectorXd vector_x(size);
+  Eigen::VectorXd vector_y(size);
+  for (int i = 0; i < size; i++) {
     double translate_x = src_x[i] - x;
     double translate_y = src_y[i] - y;
 
-    double vehicle_x = std::cos(psi) * translate_x + std::sin(psi) * translate_y;
-    double vehicle_y = -std::sin(psi) * translate_x + std::cos(psi) * translate_y;
-
-    dest_x->push_back(vehicle_x);
-    dest_y->push_back(vehicle_y);
+    vector_x(i) = std::cos(psi) * translate_x + std::sin(psi) * translate_y;
+    vector_y(i) = -std::sin(psi) * translate_x + std::cos(psi) * translate_y;
   }
+
+  return {vector_x, vector_y};
 }
 
 
@@ -111,22 +114,15 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
-          assert(ptsx.size() == ptsy.size());
-          Eigen::VectorXd vec_x(ptsx.size());
-          Eigen::VectorXd vec_y(ptsy.size());
 
-          for (int i = 0; i < ptsx.size(); i++) {
-            vec_x(i) = ptsx[i];
-            vec_y(i) = ptsy[i];
-          }
+          vector<Eigen::VectorXd> points = transformToLocalFrame(px, py, psi, ptsx, ptsy);
+          auto coeffs = polyfit(points[0], points[1], 3);
 
-          auto coeffs = polyfit(vec_x, vec_y, 3);
-
-          double cte = polyeval(coeffs, px) - py;
-          double epsi = psi - std::atan(coeffs[1] + coeffs[2] * px + coeffs[3] * px * px);
+          double cte = polyeval(coeffs, 0);
+          double epsi = -atan(coeffs[1]);
 
           Eigen::VectorXd state(6);
-          state << px, py, psi, v, cte, epsi;
+          state << 0, 0, 0, v, cte, epsi;
 
           /*
           * Calculate steering angle and throttle using MPC.
@@ -162,7 +158,10 @@ int main() {
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
-          transform(px, py, psi, ptsx, ptsy, &next_x_vals, &next_y_vals);
+          for (int i = 0; i < points[0].size(); i++) {
+            next_x_vals.push_back(points[0][i]);
+            next_y_vals.push_back(points[1][i]);
+          }
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
