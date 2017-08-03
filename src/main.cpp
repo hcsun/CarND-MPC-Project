@@ -111,14 +111,34 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
+          assert(ptsx.size() == ptsy.size());
+          Eigen::VectorXd vec_x(ptsx.size());
+          Eigen::VectorXd vec_y(ptsy.size());
+
+          for (int i = 0; i < ptsx.size(); i++) {
+            vec_x(i) = ptsx[i];
+            vec_y(i) = ptsy[i];
+          }
+
+          auto coeffs = polyfit(vec_x, vec_y, 3);
+
+          double cte = polyeval(coeffs, px) - py;
+          double epsi = psi - std::atan(coeffs[1] + coeffs[2] * px + coeffs[3] * px * px);
+
+          Eigen::VectorXd state(6);
+          state << px, py, psi, v, cte, epsi;
+
           /*
-          * TODO: Calculate steering angle and throttle using MPC.
+          * Calculate steering angle and throttle using MPC.
           *
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+
+          auto solution = mpc.Solve(state, coeffs);
+
+          double steer_value = -solution[0] / deg2rad(25.0);
+          double throttle_value = solution[1];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -159,7 +179,7 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
           // SUBMITTING.
-          this_thread::sleep_for(chrono::milliseconds(100));
+          this_thread::sleep_for(chrono::milliseconds(0));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
