@@ -65,6 +65,25 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals,
   return result;
 }
 
+// To transform from world coordinate to vehicle coordinate
+void transform(const double x, const double y, const double psi, 
+               const vector<double> &src_x, 
+               const vector<double> &src_y, 
+               vector<double> *dest_x, 
+               vector<double> *dest_y) {
+  for (int i = 0; i < src_x.size(); i++) {
+    double translate_x = src_x[i] - x;
+    double translate_y = src_y[i] - y;
+
+    double vehicle_x = std::cos(psi) * translate_x + std::sin(psi) * translate_y;
+    double vehicle_y = -std::sin(psi) * translate_x + std::cos(psi) * translate_y;
+
+    dest_x->push_back(vehicle_x);
+    dest_y->push_back(vehicle_y);
+  }
+}
+
+
 int main() {
   uWS::Hub h;
 
@@ -123,6 +142,7 @@ int main() {
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
+          transform(px, py, psi, ptsx, ptsy, &next_x_vals, &next_y_vals);
 
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
