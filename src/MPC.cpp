@@ -132,7 +132,7 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
+vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs, const unsigned int latency) {
   bool ok = true;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
@@ -247,10 +247,17 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   auto cost = solution.obj_value;
   std::cout << "Cost " << cost << std::endl;
 
+  // Take known latency into consideration to give proper solutions.
+  // Limit delay step to current MPC capability. 
+  unsigned int delay_step = latency / (dt * 1000);
+  if (delay_step >= N - 1) {
+    delay_step = N - 2;
+  }
+  
   // Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
   //
   // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
   // creates a 2 element double vector.
-  return {solution.x[delta_start], solution.x[a_start]};
+  return {solution.x[delta_start + delay_step], solution.x[a_start + delay_step]};
 }

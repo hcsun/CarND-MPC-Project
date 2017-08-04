@@ -131,7 +131,10 @@ int main() {
           *
           */
 
-          auto solution = mpc.Solve(state, coeffs);
+          // Assume the latency is known 
+          unsigned int know_latency_ms = 100;
+
+          auto solution = mpc.Solve(state, coeffs, know_latency_ms);
 
           double steer_value = -solution[0] / deg2rad(25.0);
           double throttle_value = solution[1];
@@ -178,7 +181,7 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
           // SUBMITTING.
-          this_thread::sleep_for(chrono::milliseconds(0));
+          this_thread::sleep_for(chrono::milliseconds(know_latency_ms));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
