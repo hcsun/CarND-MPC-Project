@@ -108,7 +108,11 @@ class FG_eval {
         f0 += coeffs[j] * CppAD::pow(x0, j);
       }
 
-      AD<double> psides0 = CppAD::atan(coeffs[1]);
+      AD<double> derivate = 0.0;
+      for (int j = 1; j < coeffs.size(); j++) {
+        derivate += coeffs[j] * CppAD::pow(x0, j - 1) * j;
+      }
+      AD<double> psides0 = CppAD::atan(derivate);
 
 
       // The model constraints
