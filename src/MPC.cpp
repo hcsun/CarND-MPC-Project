@@ -34,7 +34,7 @@ size_t a_start = delta_start + N - 1;
 const double Lf = 2.67;
 
 // Velocity reference
-double ref_v = 40;
+double ref_v = 50;
 
 class FG_eval {
  public:
@@ -64,7 +64,7 @@ class FG_eval {
     }
 
     for (int t = 0; t < N - 2; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 500 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
       fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
