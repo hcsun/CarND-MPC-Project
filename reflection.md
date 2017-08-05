@@ -37,9 +37,8 @@ The final choice of timestep length and elapsed duration are shown below:
 ```
 size_t N = 13;
 double dt = 0.05;
-
 ```
-At first, I used 25 for my N value. It was doing well. With `dt` is equal to 0.05 second, this means that I have the prediction for the next 1.25 second. Consider the target latency is 200 ms, I suppose I don't need that much time steps. So I shrank the value to 13, and it was doing good too.
+At first, I used 25 for my N value. It was doing well. With `dt` is equal to 0.05 second, this means that I have the prediction for the next 1.25 second. Consider the target latency is 200 ms, I suppose I don't need that much time steps. So I shrank the value to 13, and it was doing good too.
 
 ## Polynomial Fitting and MPC Preprocessing
 
