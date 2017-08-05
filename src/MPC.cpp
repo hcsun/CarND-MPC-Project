@@ -5,7 +5,6 @@
 
 using CppAD::AD;
 
-// TODO: Set the timestep length and duration
 size_t N = 13;
 double dt = 0.05;
 
@@ -132,7 +131,7 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<vector<double> > MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs, const unsigned int latency) {
+vector<vector<double> > MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs, const unsigned int latency_ms) {
   bool ok = true;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
@@ -248,10 +247,10 @@ vector<vector<double> > MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs
   std::cout << "Cost " << cost << std::endl;
 
   // Take known latency into consideration to give proper solutions.
-  // Limit delay step to current MPC capability. 
-  unsigned int delay_step = latency / (dt * 1000);
-  if (delay_step >= N - 1) {
-    delay_step = N - 2;
+  // Limit later step to current MPC capability. 
+  unsigned int later_step = latency_ms / (dt * 1000);
+  if (later_step >= N - 1) {
+    later_step = N - 2;
   }
 
   // For printing line calculated by MPC
@@ -268,5 +267,5 @@ vector<vector<double> > MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs
   //
   // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
   // creates a 2 element double vector.
-  return {{solution.x[delta_start + delay_step], solution.x[a_start + delay_step]}, mpc_x, mpc_y};
+  return {{solution.x[delta_start + later_step], solution.x[a_start + later_step]}, mpc_x, mpc_y};
 }
