@@ -39,7 +39,7 @@ size_t N = 13;
 double dt = 0.05;
 
 ```
-At first, I used 25 for my N value. It was doing well. With `dt` is equal to 0.05 second, this means that I have the prediction for the next 1.25 second. Consider the target latency is 200 ms, I suppose I don't need that much time steps. So I shrank the value to 13, and it was doing good too.
+At first, I used 25 for my N value. It was doing well. With `dt` is equal to 0.05 second, this means that I have the prediction for the next 1.25 second. Consider the target latency is 200 ms, I suppose I don't need that much time steps. So I shrank the value to 13, and it was doing good too.
 
 ## Polynomial Fitting and MPC Preprocessing
 
@@ -67,7 +67,7 @@ vector<Eigen::VectorXd> transformToLocalFrame(const double x, const double y, co
   return {vector_x, vector_y};
 }
 ```
-The polynomial fitting is then performed in local frame. The `cte` and `epsi` calculation are simpler compared to that using the global frame.
+The polynomial fitting is then performed in local frame. The `cte` and `epsi` calculations are simpler compared to that using the global frame.
 
 ```
 vector<Eigen::VectorXd> points = transformToLocalFrame(px, py, psi, ptsx, ptsy);
